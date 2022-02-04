@@ -16,16 +16,12 @@ import {
   ButtonGroup,
   IconButton,
   Heading,
-  Box,
   Drawer,
   DrawerOverlay,
   DrawerContent,
   DrawerHeader,
   DrawerBody,
   useDisclosure,
-  Spacer,
-  MenuIcon,
-  Text,
 } from '@chakra-ui/react';
 import { CheckIcon, CloseIcon, EditIcon, HamburgerIcon } from '@chakra-ui/icons';
 
@@ -60,7 +56,7 @@ function playersObj(total) {
 
 
 function App() {
-  var [totalPlayers, setTotalPlayers] = React.useState(10);
+  var [totalPlayers, setTotalPlayers] = React.useState(4);
   var [score, setScore] = React.useState(playersObj(totalPlayers));
   var [highScore, setHighScore] = React.useState({name: "", score: 0});
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -74,6 +70,41 @@ function App() {
     }
   }, [score])
 
+  const handleChange = (val) => {
+    let copy = score;
+      if(Object.keys(score).length > Number(val)) {
+        // console.log(Object.keys(score).length, val);
+        Array.from({length: Object.keys(score).length}, (v, k) => k + Number(val) + 1).forEach(key => {
+          // console.log(key);
+          if(key !== Number(val))
+            delete copy[`player_${key}`];
+        })
+        // console.log(copy);
+        setScore(copy);
+        setTotalPlayers(Number(val));
+        let arr = Object.values(copy);
+        let maxVal = Math.max(...arr.map(x => x.score));
+        let maxKey = Object.keys(copy).find(key => copy[key].score === maxVal);
+        setHighScore(copy[maxKey]);
+    } else {
+      Array.from({length: val}, (v, k) => k + 1).forEach(key => {
+        if(!copy[`player_${key}`]) {
+          copy[`player_${key}`] = {name: `Player ${key}`, score: 0};
+        }
+      })
+      setScore(copy);
+      setTotalPlayers(Number(val));
+    }
+  }
+
+  // const handleDeletePlayer = (key) => {
+  //   console.log(key);
+  //   let copy = score;
+  //   delete copy[key];
+  //   console.log(copy);
+  //   setScore(copy);
+  // }
+
   return (
     <ChakraProvider theme={theme}>
       <Container textAlign="center" p={0} m={0} maxW={'full'} h={"100vh"} overflow={"auto"}>
@@ -81,9 +112,12 @@ function App() {
         <Drawer placement='left' onClose={onClose} isOpen={isOpen} size={"xs"}>
           <DrawerOverlay />
           <DrawerContent>
-            <DrawerHeader>{`xs drawer contents`}</DrawerHeader>
+            <DrawerHeader>Scoreboard Menu</DrawerHeader>
             <DrawerBody>
-              
+              <FormControl>
+                <FormLabel htmlFor="totalPlayers">Total Players</FormLabel>
+                <Input value={totalPlayers} type="number" onChange={e => e.target.value && handleChange(e.target.value)}/>
+              </FormControl>
             </DrawerBody>
           </DrawerContent>
         </Drawer>
@@ -98,22 +132,23 @@ function App() {
           </HStack>
           {/* </Box> */}
           <SimpleGrid columns={2} spacing={5} alignContent={"center"} alignItems={"flex-end"} px={5} py={5}>
-            {Array.from({ length: totalPlayers }).map((_, i) => 
+            {Object.keys(score).map((el, i) => 
             <>
               <FormControl key={i}>
                 <FormLabel>                
-                  <Editable defaultValue={score[`player_${i + 1}`].name} onSubmit={(e) => setScore({...score, [`player_${i + 1}`]: {...score[`player_${i + 1}`], name: e}})}>
+                  <Editable defaultValue={score[el].name} onSubmit={(e) => setScore({...score, [`player_${i + 1}`]: {...score[el], name: e}})}>
                   <HStack>
                     <EditablePreview />
                     <EditableInput />
                     <EditableControls />
+                    {/* <Button size={"sm"} onClick={() => handleDeletePlayer(`player_${i + 1}`)}><DeleteIcon /></Button> */}
                   </HStack>
                 </Editable></FormLabel>
-                <Input defaultValue={0} value={score[`player_${i + 1}`].score} onChange={(e) => setScore({...score, [`player_${i + 1}`]: {...score[`player_${i + 1}`], score: Number(e.target.value)}})}/>
+                <Input defaultValue={0} value={score[el].score} onChange={(e) => setScore({...score, [`player_${i + 1}`]: {...score[el], score: Number(e.target.value)}})}/>
               </FormControl>
               <HStack key={`i${1}`}>
-                <Button w={"full"} onClick={() => setScore({...score, [`player_${i + 1}`]: {...score[`player_${i + 1}`], score: Number(score[`player_${i + 1}`].score) + 1}})}>+ 1</Button>
-                <Button w={"full"} onClick={() => setScore({...score, [`player_${i + 1}`]: {...score[`player_${i + 1}`], score: Number(score[`player_${i + 1}`].score) - 1}})}>- 1</Button>
+                <Button w={"full"} onClick={() => setScore({...score, [`player_${i + 1}`]: {...score[el], score: Number(score[el].score) + 1}})}>+ 1</Button>
+                <Button w={"full"} onClick={() => setScore({...score, [`player_${i + 1}`]: {...score[el], score: Number(score[el].score) - 1}})}>- 1</Button>
               </HStack>
             </>)}
           </SimpleGrid>
