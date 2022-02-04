@@ -57,6 +57,7 @@ function playersObj(total) {
 
 function App() {
   var [totalPlayers, setTotalPlayers] = React.useState(4);
+  var [stateTotal, setStateTotal] = React.useState(4);
   var [score, setScore] = React.useState(playersObj(totalPlayers));
   var [highScore, setHighScore] = React.useState({name: "", score: 0});
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -72,7 +73,7 @@ function App() {
 
   const handleChange = (val) => {
     let copy = score;
-      if(Object.keys(score).length > Number(val)) {
+      if(val && Object.keys(score).length > Number(val)) {
         // console.log(Object.keys(score).length, val);
         Array.from({length: Object.keys(score).length}, (v, k) => k + Number(val) + 1).forEach(key => {
           // console.log(key);
@@ -86,7 +87,7 @@ function App() {
         let maxVal = Math.max(...arr.map(x => x.score));
         let maxKey = Object.keys(copy).find(key => copy[key].score === maxVal);
         setHighScore(copy[maxKey]);
-    } else {
+    } else if(val) {
       Array.from({length: val}, (v, k) => k + 1).forEach(key => {
         if(!copy[`player_${key}`]) {
           copy[`player_${key}`] = {name: `Player ${key}`, score: 0};
@@ -94,7 +95,7 @@ function App() {
       })
       setScore(copy);
       setTotalPlayers(Number(val));
-    }
+    } else setTotalPlayers("")
   }
 
   // const handleDeletePlayer = (key) => {
@@ -116,8 +117,12 @@ function App() {
             <DrawerBody>
               <FormControl>
                 <FormLabel htmlFor="totalPlayers">Total Players</FormLabel>
-                <Input value={totalPlayers} type="number" onChange={e => e.target.value && handleChange(e.target.value)}/>
+                <Input value={totalPlayers} placeholder="Number of players" type="number" onChange={e =>  handleChange(e.target.value)}/>
               </FormControl>
+              <HStack key={`totalplayers_el`}>
+                <Button w={"full"} onClick={() => handleChange(totalPlayers + 1)}>+ 1</Button>
+                <Button w={"full"} onClick={() => handleChange(totalPlayers - 1)}>- 1</Button>
+              </HStack>
             </DrawerBody>
           </DrawerContent>
         </Drawer>
@@ -144,9 +149,9 @@ function App() {
                     {/* <Button size={"sm"} onClick={() => handleDeletePlayer(`player_${i + 1}`)}><DeleteIcon /></Button> */}
                   </HStack>
                 </Editable></FormLabel>
-                <Input defaultValue={0} value={score[el].score} onChange={(e) => setScore({...score, [`player_${i + 1}`]: {...score[el], score: Number(e.target.value)}})}/>
+                <Input value={score[el].score} onChange={(e) => setScore({...score, [`player_${i + 1}`]: {...score[el], score: Number(e.target.value)}})}/>
               </FormControl>
-              <HStack key={`i${1}`}>
+              <HStack key={`i${i}`}>
                 <Button w={"full"} onClick={() => setScore({...score, [`player_${i + 1}`]: {...score[el], score: Number(score[el].score) + 1}})}>+ 1</Button>
                 <Button w={"full"} onClick={() => setScore({...score, [`player_${i + 1}`]: {...score[el], score: Number(score[el].score) - 1}})}>- 1</Button>
               </HStack>
